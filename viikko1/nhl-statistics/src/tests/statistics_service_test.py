@@ -1,23 +1,22 @@
 import unittest
-from statistics_service import StatisticsService
+from statistics_service import StatisticsService, SortBy
 from player import Player
+
 
 class PlayerReaderStub:
     def get_players(self):
         return [
-            Player("Semenko", "EDM", 4, 12),  #  4+12 = 16
-            Player("Lemieux", "PIT", 45, 54), # 45+54 = 99
-            Player("Kurri",   "EDM", 37, 53), # 37+53 = 90
-            Player("Yzerman", "DET", 42, 56), # 42+56 = 98
-            Player("Gretzky", "EDM", 35, 89)  # 35+89 = 124
+            Player("Semenko", "EDM", 4, 12),     #  4+12 = 16
+            Player("Lemieux", "PIT", 45, 54),    # 45+54 = 99
+            Player("Kurri",   "EDM", 37, 53),    # 37+53 = 90
+            Player("Yzerman", "DET", 42, 56),    # 42+56 = 98
+            Player("Gretzky", "EDM", 35, 89)     # 35+89 = 124
         ]
+
 
 class TestStatisticsService(unittest.TestCase):
     def setUp(self):
-        # annetaan StatisticsService-luokan oliolle "stub"-luokan olio
-        self.stats = StatisticsService(
-            PlayerReaderStub()
-        )
+        self.stats = StatisticsService(PlayerReaderStub())
 
     def test_search_returns_player_when_name_matches(self):
         player = self.stats.search("Kurri")
@@ -44,14 +43,33 @@ class TestStatisticsService(unittest.TestCase):
 
         self.assertEqual(players, [])
 
-    def test_top_returns_players_ordered_by_points(self):
+    def test_top_returns_players_ordered_by_points_by_default(self):
         players = self.stats.top(2)
 
         names = [player.name for player in players]
 
-        # Huomaa: StatisticsService.top(2) palauttaa 3 pelaajaa,
-        # koska while-ehto on i <= how_many.
         self.assertEqual(names, ["Gretzky", "Lemieux", "Yzerman"])
+
+    def test_top_returns_players_ordered_by_points_when_sortby_is_points(self):
+        players = self.stats.top(2, SortBy.POINTS)
+
+        names = [player.name for player in players]
+
+        self.assertEqual(names, ["Gretzky", "Lemieux", "Yzerman"])
+
+    def test_top_returns_players_ordered_by_goals_when_sortby_is_goals(self):
+        players = self.stats.top(2, SortBy.GOALS)
+
+        names = [player.name for player in players]
+
+        self.assertEqual(names, ["Lemieux", "Yzerman", "Kurri"])
+
+    def test_top_returns_players_ordered_by_assists_when_sortby_is_assists(self):
+        players = self.stats.top(2, SortBy.ASSISTS)
+
+        names = [player.name for player in players]
+
+        self.assertEqual(names, ["Gretzky", "Yzerman", "Lemieux"])
 
     def test_top_zero_returns_best_player(self):
         players = self.stats.top(0)
